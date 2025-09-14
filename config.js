@@ -1,3 +1,3 @@
 // Configurações fáceis de mudar
-const PIX_KEY = "123.456.789-00"; // sua chave PIX
-const SHEET_URL = "URL_DO_SEU_APP_SCRIPT"; // URL do Google Apps Script
+const PIX_KEY = "69992402943"; // sua chave PIX
+const SHEET_URL = "1SfTSk_6rNm_RDEMvVR0GRr6Nk4exfHgRYq7M0NjMNMQ"; // URL do Google Apps Script
