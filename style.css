@@ -1,0 +1,96 @@
+:root {
+  --primary: #ff7f50;
+  --secondary: #ffe4b5;
+  --text: #333;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background: var(--secondary);
+  margin: 0;
+  padding: 0;
+}
+
+header {
+  background: var(--primary);
+  color: #fff;
+  text-align: center;
+  padding: 20px;
+}
+
+main {
+  padding: 20px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+input[type="text"], input[type="email"] {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+}
+
+button {
+  background: var(--primary);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.gift-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.gift-item {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 8px;
+  border-radius: 8px;
+  flex: 1 1 200px;
+  cursor: pointer;
+}
+
+.gift-item.disabled {
+  background: #ddd;
+  color: #777;
+  pointer-events: none;
+}
+
+.pix-box {
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+}
