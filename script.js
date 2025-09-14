@@ -43,7 +43,7 @@ function renderizarLista(id, itens, tipo) {
   });
 }
 
-// Função de envio
+// Função de envio corrigida
 function enviarFormulario(e) {
   e.preventDefault();
 
@@ -61,12 +61,19 @@ function enviarFormulario(e) {
 
   fetch(SHEET_URL, {
     method: "POST",
-    mode: "no-cors",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(payload),
-  }).then(() => {
+  })
+  .then(res => res.json())
+  .then(data => {
+    console.log("Resposta do Apps Script:", data);
     abrirModal("Obrigado! Seu presente foi confirmado 🎁");
     document.getElementById("giftForm").reset();
-  }).catch(() => {
+  })
+  .catch(err => {
+    console.error("Erro:", err);
     abrirModal("Erro ao enviar. Tente novamente.");
   });
 }
