@@ -254,13 +254,11 @@
 
     const ok = await postToSheet(payload);
     if(ok){
-      // show thanks (short)
       const msg = (CONFIG.THANKS_MESSAGES && CONFIG.THANKS_MESSAGES[0]) || 'Obrigada! Seu presente foi registrado 💖';
       alert(msg);
       await fetchData();
       renderComments();
       renderItemSelect();
-      // clear some fields
       commentInput.value = '';
       valueInput.value = '';
       itemSelect.value = '';
@@ -272,23 +270,29 @@
     submitBtn.textContent = 'Enviar presente';
   }
 
+  // NOVA VERSÃO postToSheet (form-urlencoded)
   async function postToSheet(obj){
-    try{
+    try {
+      const form = new URLSearchParams();
+      for (const k in obj) {
+        if (obj.hasOwnProperty(k)) {
+          form.append(k, obj[k]);
+        }
+      }
+
       const res = await fetch(SHEET_ENDPOINT, {
         method: 'POST',
-        headers: {'Content-Type':'application/json'},
-        body: JSON.stringify(obj)
+        body: form
       });
+
       const txt = await res.text();
-      // servidor responde {status:'ok'} ou 'OK' — aceitamos palavras ok/ok
-      if(/ok/i.test(txt)) return true;
-      // se for JSON, parse and check
-      try{
+      if (/ok/i.test(txt)) return true;
+      try {
         const j = JSON.parse(txt);
         return j && (j.status === 'ok' || j.status === 'success');
-      }catch(e){}
+      } catch (e) {}
       return false;
-    }catch(e){
+    } catch (e) {
       console.error('postToSheet error', e);
       return false;
     }
@@ -301,11 +305,15 @@
       extra: extra || {},
       timestamp: new Date().toISOString()
     };
-    // no need to await
+    const form = new URLSearchParams();
+    for (const k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        form.append(k, obj[k]);
+      }
+    }
     fetch(SHEET_ENDPOINT, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(obj)
+      body: form
     }).catch(()=>{});
   }
 
@@ -338,7 +346,6 @@
   }
 
   function crc16Str(str){
-    // convert characters to bytes
     const bytes = [];
     for(let i=0;i<str.length;i++) bytes.push(str.charCodeAt(i));
     let crc = 0xFFFF;
