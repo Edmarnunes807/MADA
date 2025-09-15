@@ -1,102 +1,63 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Lista Chá de Panela</title>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chá de Panela 💕</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <main class="container">
-    <header class="hero">
-      <div class="hero-left">
-        <h1>Chá de Panela</h1>
-        <p class="subtitle">Sua presença é o nosso presente — escolha um mimo da lista ou contribua com PIX 💖</p>
-      </div>
-      <div class="hero-right">
-        <img src="https://images.unsplash.com/photo-1524504388940-b1c1722653e1?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3&s=3d2c6b0a0b3d2c9b8b3b3b3b3b3b3b3b" alt="Chá de panela" />
-      </div>
-    </header>
+  <header>
+    <h1>💐 Chá de Panela 💐</h1>
+    <p>Escolha um presente da lista ou contribua via PIX</p>
+  </header>
 
-    <section class="card">
-      <h2>Escolha um item da lista</h2>
-      <p class="hint">Você pode escolher um único item por envio. Itens das Listas I e II podem ser escolhidos **até 2 vezes**; Lista III apenas **1 vez**.</p>
+  <main>
+    <section class="form-section">
+      <form id="giftForm">
+        <label>Nome*</label>
+        <input type="text" name="nome" required>
 
-      <div class="form-grid">
-        <label>Nome <span class="required">*</span>
-          <input id="name" type="text" placeholder="Seu nome" required>
-        </label>
+        <label>Email*</label>
+        <input type="email" name="email" required>
 
-        <label>Email <span class="required">*</span>
-          <input id="email" type="email" placeholder="seu@email.com" required>
-        </label>
+        <label>Telefone</label>
+        <input type="tel" name="telefone">
 
-        <label>Telefone
-          <input id="phone" type="tel" placeholder="(xx) xxxxx-xxxx">
-        </label>
+        <label>Escolha um item da lista:</label>
+        <select id="giftSelect" name="item">
+          <option value="">-- Selecione --</option>
+        </select>
 
-        <label>Escolha Lista
-          <select id="listSelector">
-            <option value="1">Lista I – Cozinha</option>
-            <option value="2">Lista II – Banheiro e Quarto</option>
-            <option value="3">Lista III – Eletros e Utilidades</option>
-          </select>
-        </label>
+        <label>Comentário</label>
+        <textarea name="comentario" placeholder="Deixe uma mensagem carinhosa..."></textarea>
 
-        <label>Item
-          <select id="itemSelector">
-            <option>Carregando itens...</option>
-          </select>
-        </label>
+        <button type="submit">Enviar Presente 🎁</button>
+      </form>
+    </section>
 
-        <label>Comentário
-          <textarea id="comment" rows="3" placeholder="Mensagem, aviso ou observação (opcional)"></textarea>
-        </label>
-      </div>
-
-      <div class="actions">
-        <button id="submitGift" class="btn-primary">Enviar presente escolhido</button>
-        <button id="openPix" class="btn-outline">Contribuir via PIX</button>
+    <section class="pix-section">
+      <h2>Ou contribua com PIX 💖</h2>
+      <button id="pixButton">Contribuir com PIX</button>
+      <div id="pixArea" class="hidden">
+        <p>Chave PIX:</p>
+        <input type="text" id="pixKey" readonly>
+        <button id="copyPix">Copiar chave</button>
+        <div id="qrcode"></div>
       </div>
     </section>
 
-    <section class="card pix-area hidden" id="pixArea">
-      <h2>Contribuição via PIX</h2>
-      <p class="hint">Clique no QR para abrir no celular ou copie a chave.</p>
-
-      <div class="pix-content">
-        <div class="qr-wrap" id="qrWrap">
-          <!-- QR aparecerá aqui -->
-        </div>
-        <div class="pix-info">
-          <p><strong>Chave PIX:</strong> <span id="pixKeyText"></span></p>
-          <div class="pix-actions">
-            <button id="copyPix" class="btn-primary">Copiar chave PIX</button>
-            <button id="pixDone" class="btn-outline">Voltar</button>
-          </div>
-        </div>
-      </div>
+    <section class="comments-section">
+      <h2>Mensagens 💌</h2>
+      <ul id="commentsList"></ul>
     </section>
-
-    <section class="card comments" id="commentsCard">
-      <h2>Comentários & Mensagens</h2>
-      <p class="hint">Obrigatório nome e email para comentar.</p>
-      <div id="commentsList" class="comments-list">
-        <!-- comentários virão aqui -->
-      </div>
-    </section>
-
-    <section class="card thanks hidden" id="thanksCard">
-      <h2>Obrigado!</h2>
-      <p id="thanksMessage"></p>
-      <button id="thanksOk" class="btn-primary">Fechar</button>
-    </section>
-
-    <footer class="footer">Feito com 💖 — Para alterar itens, edite <code>config.js</code> e atualize as configurações no Google Sheets.</footer>
   </main>
 
+  <footer>
+    <p>Com carinho 💕 Muito obrigada por participar desse momento especial!</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="config.js"></script>
   <script src="script.js"></script>
 </body>

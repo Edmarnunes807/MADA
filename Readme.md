@@ -1,3 +1,3 @@
-versão 1.0 beta
+versão 1.02 beta
 
 atualização de planilha e segmentos de update
