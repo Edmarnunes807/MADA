@@ -43,7 +43,7 @@
         </div>
 
         <div class="row">
-          <label>Valor (se quiser informar um valor para o presente / contribuição)</label>
+          <label>Valor (opcional)</label>
           <input id="value" name="value" inputmode="decimal" placeholder="Ex: 50.00">
         </div>
 
@@ -67,7 +67,7 @@
       </div>
 
       <div class="pix-row small">
-        <button id="generatePix" class="btn primary">Gerar QR para pagamento</button>
+        <button id="generatePix" class="btn primary">Gerar QR</button>
         <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
         <button id="closePix" class="btn ghost">Fechar</button>
       </div>
@@ -78,7 +78,7 @@
           <p><strong>Chave:</strong> <span id="pixKeyText">—</span></p>
           <p><strong>Payload:</strong> <code id="pixPayload" class="mono small">—</code></p>
           <div class="pix-actions">
-            <button id="openQrNew" class="btn small">Abrir QR em nova aba</button>
+            <button id="openQrNew" class="btn small">Abrir QR</button>
             <button id="confirmPaid" class="btn small primary">Já paguei / Confirmar</button>
           </div>
         </div>
@@ -90,11 +90,6 @@
       <div id="commentsList">
         <p class="hint">Carregando comentários...</p>
       </div>
-    </section>
-
-    <section class="panel logs-panel hidden" id="adminLog">
-      <h3>Logs (somente admin)</h3>
-      <div id="logs"></div>
     </section>
 
     <footer class="footer">Obrigada pelo carinho — qualquer dúvida, entre em contato!</footer>

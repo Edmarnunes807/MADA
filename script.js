@@ -1,11 +1,11 @@
-/* script.js */
+/* script.js - front-end completo */
 (function(){
-  if(typeof SHEET_ENDPOINT === 'undefined' || !SHEET_ENDPOINT) {
+  if(typeof SHEET_ENDPOINT === 'undefined' || !SHEET_ENDPOINT){
     alert('Por favor configure a URL do Apps Script em config.js (SHEET_ENDPOINT).');
     return;
   }
 
-  // elementos
+  // DOM
   const listFilter = document.getElementById('listFilter');
   const itemSelect = document.getElementById('itemSelect');
   const commentsList = document.getElementById('commentsList');
@@ -23,74 +23,81 @@
   const closePix = document.getElementById('closePix');
   const nameInput = document.getElementById('name');
   const emailInput = document.getElementById('email');
+  const phoneInput = document.getElementById('phone');
   const valueInput = document.getElementById('value');
   const commentInput = document.getElementById('comment');
   const submitBtn = document.getElementById('submitBtn');
 
-  let CONFIG = null;
+  // state
+  let CONFIG = {};
   let ITEMS = [];
-  let COUNTS = {}; // itemId -> count (vindo do server)
-  let ITEM_MAP = {}; // id -> item object
+  let DADOS = []; // raw dados from sheet
+  let COUNTS = {}; // item_id -> number
 
-  // inicializa
-  async function init(){
-    await loadConfig();
-    await loadItems();
-    await loadCommentsAndCounts();
+  // init
+  async function boot(){
+    await loadAll();
     setupListeners();
   }
 
-  async function loadConfig(){
+  async function loadAll(){
+    await fetchConfig();
+    await fetchItems();
+    await fetchData(); // fills DADOS and COUNTS and comments
+    populateLists();
+    renderItemSelect();
+    renderComments();
+    if(CONFIG.PIX_KEY) {
+      pixKeyText.textContent = CONFIG.PIX_KEY;
+    }
+  }
+
+  async function fetchConfig(){
     try{
-      const res = await fetch(`${SHEET_ENDPOINT}?action=getConfig`);
-      const j = await res.json();
+      const r = await fetch(`${SHEET_ENDPOINT}?action=getConfig`);
+      const j = await r.json();
       CONFIG = j.config || {};
-      // mostra chave PIX no painel
-      pixKeyText.textContent = CONFIG.PIX_KEY || '—';
+      // parse THANKS_MESSAGES if stringified
+      if(typeof CONFIG.THANKS_MESSAGES === 'string') {
+        try { CONFIG.THANKS_MESSAGES = JSON.parse(CONFIG.THANKS_MESSAGES); } catch(e){ CONFIG.THANKS_MESSAGES = [CONFIG.THANKS_MESSAGES]; }
+      }
     }catch(e){
-      console.error('Erro carregando config', e);
+      console.error('Erro fetchConfig', e);
       CONFIG = {};
     }
   }
 
-  async function loadItems(){
+  async function fetchItems(){
     try{
-      const res = await fetch(`${SHEET_ENDPOINT}?action=getItems`);
-      const j = await res.json();
+      const r = await fetch(`${SHEET_ENDPOINT}?action=getItems`);
+      const j = await r.json();
       ITEMS = j.items || [];
-      // popula lista de filtros e select
-      populateLists();
     }catch(e){
-      console.error('Erro carregando items', e);
+      console.error('Erro fetchItems', e);
       ITEMS = [];
     }
   }
 
-  async function loadCommentsAndCounts(){
+  async function fetchData(){
     try{
-      const res = await fetch(`${SHEET_ENDPOINT}?action=getData`);
-      const j = await res.json();
-      const data = j.dados || [];
-      // contar seleções por item_id
+      const r = await fetch(`${SHEET_ENDPOINT}?action=getData`);
+      const j = await r.json();
+      DADOS = j.dados || [];
+      // build counts
       COUNTS = {};
-      data.forEach(r=>{
-        if(r.item_id){
-          COUNTS[r.item_id] = (COUNTS[r.item_id]||0) + 1;
-        }
+      DADOS.forEach(row=>{
+        const id = row.item_id || row.item || '';
+        if(id) COUNTS[id] = (COUNTS[id]||0) + 1;
       });
-      // comments: apenas os que vieram com visible = TRUE (será controlado pela planilha)
-      const comments = data.filter(r => r.comment && (r.comment_visible !== 'FALSE'));
-      renderComments(comments);
-      // monta itens com uso de COUNTS
-      renderItemSelect();
     }catch(e){
-      console.error('Erro carregando dados', e);
+      console.error('Erro fetchData', e);
+      DADOS = [];
+      COUNTS = {};
     }
   }
 
   function populateLists(){
-    // lista única de nomes de lista
-    const lists = Array.from(new Set(ITEMS.map(i=>i.list || 'Geral')));
+    const lists = Array.from(new Set(ITEMS.map(i => i.list || 'Geral')));
     listFilter.innerHTML = '';
     lists.forEach(l=>{
       const opt = document.createElement('option');
@@ -98,33 +105,39 @@
       opt.textContent = l;
       listFilter.appendChild(opt);
     });
-    // default
-    listFilter.value = lists[0];
+    if(lists.length === 0){
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Sem itens';
+      listFilter.appendChild(opt);
+    }
   }
 
   function renderItemSelect(){
-    const chosenList = listFilter.value;
+    const chosen = listFilter.value || (listFilter.options[0] && listFilter.options[0].value) || '';
     itemSelect.innerHTML = '<option value="">-- selecione --</option>';
-    ITEM_MAP = {};
-    ITEMS.filter(i=>i.list === chosenList).forEach(it=>{
-      ITEM_MAP[it.id] = it;
-      const count = Number(COUNTS[it.id]||0);
-      const limit = Number(it.limit || CONFIG.LIMITS && CONFIG.LIMITS[it.listKey] || it.limit || 1);
+    ITEMS.filter(it => (it.list || 'Geral') === chosen).forEach(it=>{
+      const id = String(it.id);
+      const label = it.label || id;
+      const price = it.price ? ` • R$ ${it.price}` : '';
+      const limit = Number(it.limit || 1);
+      const count = Number(COUNTS[id] || 0);
       const opt = document.createElement('option');
-      opt.value = it.id;
-      opt.textContent = `${it.label}${it.price ? ' • R$ ' + it.price : ''}${count>0 ? ` (${count} já)` : ''}${count >= limit ? ' — esgotado' : ''}`;
+      opt.value = id;
+      opt.textContent = `${label}${price}${count>0? ` (${count} já)` : ''}${count >= limit ? ' — esgotado' : ''}`;
       if(count >= limit) opt.disabled = true;
       itemSelect.appendChild(opt);
     });
   }
 
-  function renderComments(comments){
+  function renderComments(){
     commentsList.innerHTML = '';
-    if(!comments.length){
+    const visibleComments = DADOS.filter(r => r.comment && String(r.comment_visible || 'TRUE').toUpperCase() !== 'FALSE' );
+    if(visibleComments.length === 0){
       commentsList.innerHTML = '<p class="hint">Nenhuma mensagem ainda — seja a primeira!</p>';
       return;
     }
-    comments.forEach(c=>{
+    visibleComments.forEach(c=>{
       const div = document.createElement('div');
       div.className = 'comment';
       const who = document.createElement('div');
@@ -153,51 +166,54 @@
 
     pixBtn.addEventListener('click', ()=>{
       pixPanel.classList.toggle('hidden');
-      logAction('pix_view');
+      postLog('pix_view');
     });
 
-    generatePix.addEventListener('click', ()=>{
-      generatePixPayload();
-    });
+    generatePix.addEventListener('click', ()=> generatePixPayload());
 
     copyPixKey.addEventListener('click', async ()=>{
       const key = CONFIG.PIX_KEY || '';
+      if(!key){
+        alert('PIX não configurado.');
+        return;
+      }
       try{
         await navigator.clipboard.writeText(key);
         alert('Chave PIX copiada!');
-        logAction('pix_copy');
+        postLog('pix_copy');
       }catch(e){
-        alert('Não foi possível copiar automaticamente. Copie manualmente: ' + key);
+        prompt('Copie a chave PIX:', key);
       }
     });
 
     openQrNew.addEventListener('click', ()=>{
-      // abre imagem do qr em nova aba -> consideramos como "scan intent"
       const img = qrWrap.querySelector('img');
       if(img && img.src) window.open(img.src, '_blank');
-      logAction('pix_qr_open');
+      postLog('pix_qr_open');
     });
 
     confirmPaid.addEventListener('click', async ()=>{
-      // confirma pagamento manualmente — registra na planilha com tipo=paid e valor se houver
-      const amount = pixAmountInput.value.trim();
+      const amount = (pixAmountInput.value || '').replace(',', '.');
       await postToSheet({
         action: 'submit',
         name: nameInput.value || '—',
         email: emailInput.value || '—',
-        phone: document.getElementById('phone').value || '—',
+        phone: phoneInput.value || '—',
         item_id: '',
         item_label: 'PIX_CONTRIB',
-        comment: 'Contribuição via PIX',
+        comment: 'Contribuição PIX (confirmada)',
         type: 'pix_paid',
         amount: amount || '',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        comment_visible: 'FALSE'
       });
-      alert('Obrigado! Obrigada pela contribuição 💖');
-      logAction('pix_paid');
+      alert('Obrigado! Contribuição registrada.');
+      postLog('pix_paid', {amount});
+      await fetchData();
+      renderComments();
     });
 
-    closePix.addEventListener('click', ()=>{
+    closePix.addEventListener('click', ()=> {
       pixPanel.classList.add('hidden');
     });
   }
@@ -205,12 +221,12 @@
   async function submitGift(){
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
-    const phone = document.getElementById('phone').value.trim();
+    const phone = phoneInput.value.trim();
     const item_id = itemSelect.value;
     const comment = commentInput.value.trim();
     const amount = valueInput.value.trim();
 
-    if(!name || !email) {
+    if(!name || !email){
       alert('Nome e email são obrigatórios.');
       return;
     }
@@ -219,171 +235,144 @@
       return;
     }
 
-    // envio
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Enviando...';
+
+    // find label
+    const itemObj = ITEMS.find(x => String(x.id) === item_id) || {};
     const payload = {
       action: 'submit',
       name, email, phone,
       item_id,
-      item_label: ITEM_MAP[item_id] ? ITEM_MAP[item_id].label : item_id,
+      item_label: itemObj.label || item_id,
       comment,
       type: 'present',
       amount: amount || '',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      comment_visible: 'TRUE'
     };
 
     const ok = await postToSheet(payload);
     if(ok){
-      alert('Presente registrado — obrigada! 💕');
-      // atualizar contagens locais
-      await loadCommentsAndCounts();
-      // limpar campos de comentário e valor (mantém nome/email para facilidade)
+      // show thanks (short)
+      const msg = (CONFIG.THANKS_MESSAGES && CONFIG.THANKS_MESSAGES[0]) || 'Obrigada! Seu presente foi registrado 💖';
+      alert(msg);
+      await fetchData();
+      renderComments();
+      renderItemSelect();
+      // clear some fields
       commentInput.value = '';
       valueInput.value = '';
       itemSelect.value = '';
     }else{
-      alert('Erro ao registrar. Tente novamente em instantes.');
+      alert('Deu erro ao registrar. Tente novamente em instantes.');
     }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Enviar presente';
   }
 
   async function postToSheet(obj){
     try{
       const res = await fetch(SHEET_ENDPOINT, {
         method: 'POST',
-        body: JSON.stringify(obj),
-        headers: {'Content-Type':'application/json'}
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify(obj)
       });
-      const t = await res.text();
-      return /ok/i.test(t);
+      const txt = await res.text();
+      // servidor responde {status:'ok'} ou 'OK' — aceitamos palavras ok/ok
+      if(/ok/i.test(txt)) return true;
+      // se for JSON, parse and check
+      try{
+        const j = JSON.parse(txt);
+        return j && (j.status === 'ok' || j.status === 'success');
+      }catch(e){}
+      return false;
     }catch(e){
-      console.error('postToSheet', e);
+      console.error('postToSheet error', e);
       return false;
     }
   }
 
-  function logAction(action, extra = {}){
-    // envia log simples
+  function postLog(event, extra){
     const obj = {
       action: 'log',
-      event: action,
-      extra,
+      event: event,
+      extra: extra || {},
       timestamp: new Date().toISOString()
     };
+    // no need to await
     fetch(SHEET_ENDPOINT, {
-      method:'POST',
-      body: JSON.stringify(obj),
-      headers:{'Content-Type':'application/json'}
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(obj)
     }).catch(()=>{});
   }
 
   /* =============================
-     PIX EMV payload builder (BR spec simplified)
-     Gera uma payload EMV compatível com a maioria dos apps PIX.
-     Calcula CRC16-CCITT (polynomial 0x1021, init 0xFFFF).
+     PIX EMV builder + CRC16
+     (gera payload compatível com apps PIX)
   ============================== */
+  function tlv(id, value){
+    const s = String(value);
+    const len = String(s.length).padStart(2,'0');
+    return id + len + s;
+  }
 
   function buildPixPayload(key, merchantName, merchantCity, txid, amount){
-    // helper to format TLV
-    const tlv = (id, value) => {
-      const v = String(value);
-      const len = v.length.toString().padStart(2,'0');
-      return id + len + v;
-    };
-
-    // 26 — merchantAccountInformation with GUI + key
-    // GUI = 'br.gov.bcb.pix'
     const gui = tlv('00','br.gov.bcb.pix');
     const pixKey = tlv('01', key);
-    const merchantInfo = '26' + String((gui + pixKey).length).padStart(2,'0') + (gui + pixKey);
+    const merchantAccountInfo = '26' + String((gui + pixKey).length).toString().padStart(2,'0') + (gui + pixKey);
 
-    // other fields
-    const payloadFormat = tlv('00','01'); // payload format indicator
-    const merchantNameField = tlv('59', merchantName || 'NAO INFORMADO');
-    const merchantCityField = tlv('60', merchantCity || 'SAO PAULO');
-    const transactionId = txid ? tlv('62', txid) : '';
-
-    // amount field is optional (54)
+    const payloadFormat = tlv('00','01');
+    const merchantNameField = tlv('59', (merchantName || '---').substring(0,25));
+    const merchantCityField = tlv('60', (merchantCity || 'SAO PAULO').substring(0,15));
     const amountField = amount ? tlv('54', Number(amount).toFixed(2)) : '';
+    const txField = txid ? '62' + String(txid.length + 2).padStart(2,'0') + tlv('05', txid) : '';
 
-    // assemble without CRC
-    const partial = payloadFormat + merchantInfo + (amountField) + merchantNameField + merchantCityField + transactionId;
-
-    // Add CRC placeholder
+    const partial = payloadFormat + merchantAccountInfo + amountField + merchantNameField + merchantCityField + txField;
     const crcInput = partial + '6304';
-    const crc = crc16(ccittBuffer(crcInput)).toString(16).toUpperCase().padStart(4,'0');
+    const crc = crc16Str(crcInput);
     const full = crcInput + crc;
     return full;
   }
 
-  // Convert string to bytes for CRC
-  function ccittBuffer(str){
-    const arr = [];
-    for(let i=0;i<str.length;i++){
-      arr.push(str.charCodeAt(i));
-    }
-    return arr;
-  }
-
-  // CRC16-CCITT (poly 0x1021 init 0xFFFF)
-  function crc16(bytes){
+  function crc16Str(str){
+    // convert characters to bytes
+    const bytes = [];
+    for(let i=0;i<str.length;i++) bytes.push(str.charCodeAt(i));
     let crc = 0xFFFF;
-    for (let b of bytes){
+    for(let b of bytes){
       crc ^= (b << 8);
-      for (let i=0;i<8;i++){
-        if ((crc & 0x8000) !== 0){
-          crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
-        } else {
-          crc = (crc << 1) & 0xFFFF;
-        }
+      for(let i=0;i<8;i++){
+        if((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+        else crc = (crc << 1) & 0xFFFF;
       }
     }
-    return crc & 0xFFFF;
+    return crc.toString(16).toUpperCase().padStart(4,'0');
   }
 
   function generatePixPayload(){
-    const key = CONFIG && CONFIG.PIX_KEY ? CONFIG.PIX_KEY : '';
+    const key = CONFIG.PIX_KEY || '';
     if(!key){
       alert('PIX não configurado.');
       return;
     }
     const amount = (pixAmountInput.value || '').replace(',','.');
     const txid = 'tx' + Date.now().toString(36);
-    const merchantName = (CONFIG && CONFIG.MERCHANT_NAME) || CONFIG && CONFIG.MERCHANT || 'Nome';
-    const merchantCity = (CONFIG && CONFIG.MERCHANT_CITY) || 'SAO PAULO';
-
+    const merchantName = CONFIG.MERCHANT_NAME || CONFIG.MERCHANT || 'Nome';
+    const merchantCity = CONFIG.MERCHANT_CITY || 'SAO PAULO';
     const payload = buildPixPayload(key, merchantName, merchantCity, txid, amount);
     pixPayloadEl.textContent = payload;
     pixKeyText.textContent = key;
-
-    // gera QR via Google Chart API
     const qrUrl = 'https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl=' + encodeURIComponent(payload);
     qrWrap.innerHTML = `<img src="${qrUrl}" alt="QR PIX" style="width:100%;height:100%;object-fit:contain;cursor:pointer">`;
-    // click to open
     const img = qrWrap.querySelector('img');
-    img.addEventListener('click', ()=> window.open(qrUrl, '_blank'));
-
-    // log that user generated QR and amount
-    logAction('pix_generated', {amount: amount || '', payload});
+    if(img) img.addEventListener('click', ()=> window.open(qrUrl, '_blank'));
+    postLog('pix_generated', {amount});
   }
 
-  // Small utility: will fetch CONFIG from server-side endpoint (sheet)
-  async function fetchConfigFromServer(){
-    try{
-      const r = await fetch(`${SHEET_ENDPOINT}?action=getConfig`);
-      const j = await r.json();
-      return j.config || {};
-    }catch(e){
-      console.error(e);
-      return {};
-    }
-  }
-
-  // before first paint, fetch CONFIG (server-managed)
-  async function boot(){
-    CONFIG = await fetchConfigFromServer();
-    // override some values if items provide limits structure; but items also include their own limit
-    await init();
-  }
-
+  // start
   boot();
 
 })();
