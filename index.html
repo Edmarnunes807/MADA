@@ -1,63 +1,105 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chá de Panela 💕</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Chá de Panela — Lista de Presentes</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>💐 Chá de Panela 💐</h1>
-    <p>Escolha um presente da lista ou contribua via PIX</p>
-  </header>
+  <main class="wrap">
+    <header class="top">
+      <h1>Chá de Panela 💕</h1>
+      <p class="subtitle">Escolha um presente da lista ou contribua via PIX — obrigada pelo carinho!</p>
+    </header>
 
-  <main>
-    <section class="form-section">
-      <form id="giftForm">
-        <label>Nome*</label>
-        <input type="text" name="nome" required>
+    <section class="panel">
+      <form id="giftForm" class="form">
+        <div class="row">
+          <label>Nome <span class="req">*</span></label>
+          <input id="name" name="name" required>
+        </div>
 
-        <label>Email*</label>
-        <input type="email" name="email" required>
+        <div class="row">
+          <label>Email <span class="req">*</span></label>
+          <input id="email" name="email" type="email" required>
+        </div>
 
-        <label>Telefone</label>
-        <input type="tel" name="telefone">
+        <div class="row">
+          <label>Telefone</label>
+          <input id="phone" name="phone" type="tel">
+        </div>
 
-        <label>Escolha um item da lista:</label>
-        <select id="giftSelect" name="item">
-          <option value="">-- Selecione --</option>
-        </select>
+        <div class="row">
+          <label>Lista</label>
+          <select id="listFilter"></select>
+        </div>
 
-        <label>Comentário</label>
-        <textarea name="comentario" placeholder="Deixe uma mensagem carinhosa..."></textarea>
+        <div class="row">
+          <label>Item escolhido <span class="req">*</span></label>
+          <select id="itemSelect" required>
+            <option value="">Carregando...</option>
+          </select>
+        </div>
 
-        <button type="submit">Enviar Presente 🎁</button>
+        <div class="row">
+          <label>Valor (se quiser informar um valor para o presente / contribuição)</label>
+          <input id="value" name="value" inputmode="decimal" placeholder="Ex: 50.00">
+        </div>
+
+        <div class="row">
+          <label>Comentário (visível no site)</label>
+          <textarea id="comment" name="comment" placeholder="Deixe uma mensagem carinhosa..."></textarea>
+        </div>
+
+        <div class="actions">
+          <button id="submitBtn" type="submit" class="btn primary">Enviar presente</button>
+          <button id="pixBtn" type="button" class="btn outline">Contribuir com PIX</button>
+        </div>
       </form>
     </section>
 
-    <section class="pix-section">
-      <h2>Ou contribua com PIX 💖</h2>
-      <button id="pixButton">Contribuir com PIX</button>
-      <div id="pixArea" class="hidden">
-        <p>Chave PIX:</p>
-        <input type="text" id="pixKey" readonly>
-        <button id="copyPix">Copiar chave</button>
-        <div id="qrcode"></div>
+    <section id="pixPanel" class="panel hidden">
+      <h2>Contribuição via PIX</h2>
+      <div class="pix-row">
+        <label>Valor para PIX (R$)</label>
+        <input id="pixAmount" placeholder="Ex: 25.00" inputmode="decimal">
+      </div>
+
+      <div class="pix-row small">
+        <button id="generatePix" class="btn primary">Gerar QR para pagamento</button>
+        <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
+        <button id="closePix" class="btn ghost">Fechar</button>
+      </div>
+
+      <div id="pixBox" class="pix-box">
+        <div id="qrWrap" class="qr-wrap">QR aparecerá aqui</div>
+        <div class="pix-info">
+          <p><strong>Chave:</strong> <span id="pixKeyText">—</span></p>
+          <p><strong>Payload:</strong> <code id="pixPayload" class="mono small">—</code></p>
+          <div class="pix-actions">
+            <button id="openQrNew" class="btn small">Abrir QR em nova aba</button>
+            <button id="confirmPaid" class="btn small primary">Já paguei / Confirmar</button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="comments-section">
+    <section class="panel comments-panel">
       <h2>Mensagens 💌</h2>
-      <ul id="commentsList"></ul>
+      <div id="commentsList">
+        <p class="hint">Carregando comentários...</p>
+      </div>
     </section>
+
+    <section class="panel logs-panel hidden" id="adminLog">
+      <h3>Logs (somente admin)</h3>
+      <div id="logs"></div>
+    </section>
+
+    <footer class="footer">Obrigada pelo carinho — qualquer dúvida, entre em contato!</footer>
   </main>
 
-  <footer>
-    <p>Com carinho 💕 Muito obrigada por participar desse momento especial!</p>
-  </footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="config.js"></script>
   <script src="script.js"></script>
 </body>

@@ -1,86 +1,73 @@
-body {
-  font-family: 'Arial', sans-serif;
-  background: #fff0f6;
-  margin: 0;
-  padding: 0;
-  color: #444;
+:root{
+  --bg:#fff6fb;
+  --card:#ffffff;
+  --accent:#ff85a2;
+  --accent-2:#ffd8e8;
+  --text:#46343a;
+  --muted:#7a5a63;
+  --radius:12px;
+  --shadow: 0 8px 24px rgba(72,32,52,0.08);
+  --mono: "Courier New", monospace;
 }
 
-header {
-  background: #ffb6c1;
-  padding: 20px;
-  text-align: center;
-  border-bottom: 4px solid #f48fb1;
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  background: linear-gradient(180deg,var(--bg),#fff);
+  color:var(--text);
 }
 
-h1 {
-  margin: 0;
-  color: #fff;
+.wrap{
+  max-width:980px;
+  margin:28px auto;
+  padding:18px;
 }
 
-main {
-  padding: 20px;
-  max-width: 600px;
-  margin: auto;
+.top{
+  text-align:center;
+  background:linear-gradient(90deg,var(--accent-2),#fff);
+  padding:22px;
+  border-radius:16px;
+  box-shadow:var(--shadow);
 }
 
-form, .pix-section, .comments-section {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+.top h1{margin:0;font-size:30px;color:#6b2140;font-family: "Playfair Display", serif}
+.subtitle{margin:6px 0 0;color:var(--muted)}
+
+.panel{
+  margin-top:18px;
+  background:var(--card);
+  border-radius:var(--radius);
+  padding:16px;
+  box-shadow:var(--shadow);
 }
 
-label {
-  display: block;
-  margin-top: 10px;
-  font-weight: bold;
-}
+.form .row{margin-bottom:12px}
+.form label{display:block;font-weight:600;color:var(--muted);margin-bottom:6px}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:14px}
+textarea{min-height:88px;resize:vertical}
+.req{color:#bf2b63}
 
-input, select, textarea, button {
-  width: 100%;
-  padding: 10px;
-  margin-top: 6px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-}
+.actions{display:flex;gap:12px}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#ff5f98);color:white;box-shadow:0 8px 18px rgba(255,95,152,0.12)}
+.btn.outline{background:transparent;border:1px solid rgba(72,32,52,0.06);color:var(--text)}
+.btn.ghost{background:transparent;color:var(--muted)}
+.btn.small{padding:6px 8px;font-size:13px}
+.small{display:flex;gap:8px;align-items:center}
 
-textarea {
-  min-height: 80px;
-}
+.pix-box{display:flex;gap:18px;align-items:center;margin-top:12px;flex-wrap:wrap}
+.qr-wrap{width:220px;height:220px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
+.pix-info{flex:1}
+.mono{font-family:var(--mono)}
+.small{font-size:13px}
+.hint{color:var(--muted)}
+.comments-panel .comment{background:linear-gradient(180deg,#fff,#fff);padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(0,0,0,0.03)}
+.comment .who{font-weight:700;color:#6b2140}
+.comment .email{font-size:13px;color:var(--muted);margin-top:4px}
+.comment .body{margin-top:8px;color:var(--text)}
 
-button {
-  background: #ff85a2;
-  border: none;
-  color: white;
-  font-size: 16px;
-  cursor: pointer;
-  margin-top: 15px;
-}
+.footer{text-align:center;color:var(--muted);margin-top:16px}
 
-button:hover {
-  background: #f06292;
-}
-
-#pixArea {
-  text-align: center;
-  margin-top: 15px;
-}
-
-#qrcode {
-  margin-top: 10px;
-}
-
-.comments-section ul {
-  list-style: none;
-  padding: 0;
-}
-
-.comments-section li {
-  background: #ffe4ec;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 8px;
-}
+.hidden{display:none}
