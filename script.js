@@ -125,13 +125,14 @@
     });
   }
 
+  // ✅ novos comentários aparecem primeiro
   function renderComments() {
     commentsList.innerHTML = "";
     if (!window.COMMENTS || window.COMMENTS.length === 0) {
       commentsList.innerHTML = '<p class="hint">Nenhuma mensagem ainda — seja a primeira!</p>';
       return;
     }
-    window.COMMENTS.forEach((c) => {
+    window.COMMENTS.slice().reverse().forEach((c) => {
       const div = document.createElement("div");
       div.className = "comment";
       div.innerHTML = `<div class="who">${c.name || "Anônimo"}</div>
