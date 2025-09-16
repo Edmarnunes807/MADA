@@ -43,11 +43,6 @@
         </div>
 
         <div class="row">
-          <label>Valor (opcional)</label>
-          <input id="value" name="value" inputmode="decimal" placeholder="Ex: 50.00">
-        </div>
-
-        <div class="row">
           <label>Comentário (visível no site)</label>
           <textarea id="comment" name="comment" placeholder="Deixe uma mensagem carinhosa..."></textarea>
         </div>
@@ -59,29 +54,28 @@
       </form>
     </section>
 
-    <section id="pixPanel" class="panel hidden">
-      <h2>Contribuição via PIX</h2>
-      <div class="pix-row">
-        <label>Valor para PIX (R$)</label>
+    <!-- PIX Panel Reformulado -->
+    <section id="pixPanel" class="panel hidden pix-panel">
+      <h2>Contribuição via PIX 💸</h2>
+
+      <div class="pix-input">
+        <label for="pixAmount">Digite o valor (R$)</label>
         <input id="pixAmount" placeholder="Ex: 25.00" inputmode="decimal">
+        <button id="generatePix" class="btn primary full">Gerar PIX</button>
       </div>
 
-      <div class="pix-row small">
-        <button id="generatePix" class="btn primary">Gerar QR</button>
-        <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
-        <button id="closePix" class="btn ghost">Fechar</button>
-      </div>
-
-      <div id="pixBox" class="pix-box">
-        <div id="qrWrap" class="qr-wrap">QR aparecerá aqui</div>
-        <div class="pix-info">
-          <p><strong>Chave:</strong> <span id="pixKeyText">—</span></p>
-          <p><strong>Payload:</strong> <code id="pixPayload" class="mono small">—</code></p>
-          <div class="pix-actions">
-            <button id="openQrNew" class="btn small">Abrir QR</button>
-            <button id="confirmPaid" class="btn small primary">Já paguei / Confirmar</button>
-          </div>
+      <div id="pixBox" class="pix-box hidden">
+        <div class="qr-wrap">
+          <div id="qrWrap" class="qr-placeholder">QR aparecerá aqui</div>
         </div>
+
+        <div class="pix-actions">
+          <button id="copyPixKey" class="btn primary full">Copiar chave PIX</button>
+        </div>
+      </div>
+
+      <div class="pix-footer">
+        <button id="closePix" class="btn ghost full">Fechar</button>
       </div>
     </section>
 

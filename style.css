@@ -55,14 +55,9 @@ textarea{min-height:88px;resize:vertical}
 .btn.outline{background:transparent;border:1px solid rgba(72,32,52,0.06);color:var(--text)}
 .btn.ghost{background:transparent;color:var(--muted)}
 .btn.small{padding:6px 8px;font-size:13px}
+.btn.full{width:100%}
 .small{display:flex;gap:8px;align-items:center}
 
-.pix-box{display:flex;gap:18px;align-items:center;margin-top:12px;flex-wrap:wrap}
-.qr-wrap{width:220px;height:220px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
-.pix-info{flex:1}
-.mono{font-family:var(--mono)}
-.small{font-size:13px}
-.hint{color:var(--muted)}
 .comments-panel .comment{background:linear-gradient(180deg,#fff,#fff);padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(0,0,0,0.03)}
 .comment .who{font-weight:700;color:#6b2140}
 .comment .email{font-size:13px;color:var(--muted);margin-top:4px}
@@ -71,3 +66,47 @@ textarea{min-height:88px;resize:vertical}
 .footer{text-align:center;color:var(--muted);margin-top:16px}
 
 .hidden{display:none}
+
+/* PIX reformulado */
+.pix-panel h2 {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.pix-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pix-input input {
+  font-size: 16px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(0,0,0,0.1);
+  text-align: center;
+}
+
+.qr-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 16px 0;
+}
+
+.qr-placeholder {
+  width: 220px;
+  height: 220px;
+  background: #fafafa;
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  text-align: center;
+}
+
+.pix-actions {
+  margin-top: 12px;
+}
