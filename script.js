@@ -110,7 +110,8 @@
   }
 
   function renderItemSelect() {
-    const chosen = listFilter.value || (listFilter.options[0] && listFilter.options[0].value) || "";
+    const chosen =
+      listFilter.value || (listFilter.options[0] && listFilter.options[0].value) || "";
     itemSelect.innerHTML = '<option value="">-- selecione --</option>';
     ITEMS.filter((it) => (it.list || "Geral") === chosen).forEach((it) => {
       const id = String(it.id);
@@ -125,13 +126,14 @@
     });
   }
 
-  // ✅ novos comentários aparecem primeiro
   function renderComments() {
     commentsList.innerHTML = "";
     if (!window.COMMENTS || window.COMMENTS.length === 0) {
-      commentsList.innerHTML = '<p class="hint">Nenhuma mensagem ainda — seja a primeira!</p>';
+      commentsList.innerHTML =
+        '<p class="hint">Nenhuma mensagem ainda — seja a primeira!</p>';
       return;
     }
+    // comentários novos primeiro
     window.COMMENTS.slice().reverse().forEach((c) => {
       const div = document.createElement("div");
       div.className = "comment";
@@ -195,6 +197,7 @@
     }
   }
 
+  // === PIX ===
   function crc16Str(str) {
     const bytes = [];
     for (let i = 0; i < str.length; i++) bytes.push(str.charCodeAt(i));
@@ -222,7 +225,16 @@
     return payload + crc;
   }
 
-  function generatePixPayload() {
+  async function generatePixPayload() {
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const phone = phoneInput.value.trim();
+
+    if (!name || !email) {
+      alert("Preencha nome e email antes de gerar o PIX.");
+      return;
+    }
+
     let raw = pixAmountInput.value.replace(/\D/g, "");
     if (raw === "") raw = "0";
     const amount = parseFloat((parseInt(raw, 10) / 100).toFixed(2));
@@ -230,6 +242,7 @@
       alert("Digite um valor válido.");
       return;
     }
+
     const finalPayload = buildPayloadWithAmount(BASE_PAYLOAD, amount);
     const qrUrl =
       "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
@@ -237,6 +250,26 @@
     qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" style="width:200px;height:200px;object-fit:contain;">`;
     document.getElementById("pixBox").classList.remove("hidden");
     pixGenerated = true;
+
+    // envia PIX para planilha
+    const payload = {
+      action: "submit",
+      name,
+      email,
+      phone,
+      item_id: "PIX",
+      item_label: "Contribuição PIX",
+      comment: "",
+      type: "pix",
+      amount: amount.toFixed(2).replace(".", ","),
+      timestamp: new Date().toISOString(),
+      comment_visible: "TRUE",
+    };
+    const ok = await postToSheet(payload);
+    if (!ok) {
+      console.warn("⚠️ Falha ao registrar contribuição PIX na planilha");
+    }
+
     copyPixKey.onclick = () => {
       navigator.clipboard
         .writeText(finalPayload)
@@ -245,6 +278,7 @@
     };
   }
 
+  // === Eventos ===
   function setupListeners() {
     listFilter.addEventListener("change", renderItemSelect);
     giftForm.addEventListener("submit", (ev) => ev.preventDefault());
@@ -253,7 +287,9 @@
       pixPanel.classList.remove("hidden");
       window.scrollTo({ top: pixPanel.offsetTop - 20, behavior: "smooth" });
     });
-    document.getElementById("generatePix").addEventListener("click", generatePixPayload);
+    document
+      .getElementById("generatePix")
+      .addEventListener("click", generatePixPayload);
     closePix.addEventListener("click", () => pixPanel.classList.add("hidden"));
 
     commentToggle.addEventListener("click", () => {
@@ -261,7 +297,8 @@
       const email = emailInput.value.trim();
       commentGlobalError.classList.add("hidden");
       if (!name || !email) {
-        commentGlobalError.textContent = "⚠️ Preencha nome e e-mail antes de comentar.";
+        commentGlobalError.textContent =
+          "⚠️ Preencha nome e e-mail antes de comentar.";
         commentGlobalError.classList.remove("hidden");
         return;
       }
