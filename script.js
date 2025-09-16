@@ -32,9 +32,10 @@
   let DADOS = [];
   let COUNTS = {};
   let pixGenerated = false;
+  let lastFinalPayload = ""; // guarda o último payload gerado (para cópia)
 
-  // PIX base
-  const BASE_PAYLOAD =
+  // fallback (se quiser manter um default local)
+  const FALLBACK_BASE_PAYLOAD =
     "00020126580014BR.GOV.BCB.PIX013656daaa2c-6501-49c4-abd6-64f60a8b3c2c5204000053039865802BR5917Edmar Rocha Nunes6009SAO PAULO62140510btpjCxgcJj63045C24";
 
   async function boot() {
@@ -57,8 +58,9 @@
       const r = await fetch(`${SHEET_ENDPOINT}?action=getConfig`);
       const j = await r.json();
       CONFIG = j.config || {};
-    } catch {
+    } catch (e) {
       CONFIG = {};
+      console.warn("Não foi possível carregar config:", e);
     }
   }
 
@@ -67,8 +69,9 @@
       const r = await fetch(`${SHEET_ENDPOINT}?action=getItems`);
       const j = await r.json();
       ITEMS = j.items || [];
-    } catch {
+    } catch (e) {
       ITEMS = [];
+      console.warn("Não foi possível carregar items:", e);
     }
   }
 
@@ -82,9 +85,10 @@
         const id = row.item_id || row.item || "";
         if (id) COUNTS[id] = (COUNTS[id] || 0) + 1;
       });
-    } catch {
+    } catch (e) {
       DADOS = [];
       COUNTS = {};
+      console.warn("Não foi possível carregar dados:", e);
     }
   }
 
@@ -93,8 +97,9 @@
       const r = await fetch(`${SHEET_ENDPOINT}?action=getComments`);
       const j = await r.json();
       window.COMMENTS = j.comments || [];
-    } catch {
+    } catch (e) {
       window.COMMENTS = [];
+      console.warn("Não foi possível carregar comentários:", e);
     }
   }
 
@@ -137,11 +142,23 @@
     window.COMMENTS.slice().reverse().forEach((c) => {
       const div = document.createElement("div");
       div.className = "comment";
-      div.innerHTML = `<div class="who">${c.name || "Anônimo"}</div>
-                       <div class="email">${c.email || ""}</div>
-                       <div class="body">${c.comment || ""}</div>`;
+      // usar pre-wrap para manter quebras; o CSS pode necesitar ajuste se não quebrar corretamente
+      div.innerHTML = `<div class="who">${escapeHtml(c.name || "Anônimo")}</div>
+                       <div class="email">${escapeHtml(c.email || "")}</div>
+                       <div class="body">${escapeHtml(c.comment || "")}</div>`;
       commentsList.appendChild(div);
     });
+  }
+
+  // protege contra injeção simples (não substitui sanitização no servidor)
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;")
+      .replace(/\n/g, "<br>");
   }
 
   async function sendComment() {
@@ -192,12 +209,13 @@
       const res = await fetch(SHEET_ENDPOINT, { method: "POST", body: form });
       const txt = await res.text();
       return /ok/i.test(txt);
-    } catch {
+    } catch (e) {
+      console.warn("postToSheet falhou:", e);
       return false;
     }
   }
 
-  // === PIX ===
+  // === PIX helpers ===
   function crc16Str(str) {
     const bytes = [];
     for (let i = 0; i < str.length; i++) bytes.push(str.charCodeAt(i));
@@ -225,6 +243,21 @@
     return payload + crc;
   }
 
+  // tenta extrair o basePayload do CONFIG com vários nomes possíveis
+  function getBasePayloadFromConfig() {
+    if (!CONFIG || typeof CONFIG !== "object") return "";
+    return (
+      CONFIG.basePayload ||
+      CONFIG.base_payload ||
+      CONFIG.BASE_PAYLOAD ||
+      CONFIG.pixPayload ||
+      CONFIG.pix_payload ||
+      CONFIG.pix ||
+      CONFIG.payload ||
+      ""
+    );
+  }
+
   async function generatePixPayload() {
     const name = nameInput.value.trim();
     const email = emailInput.value.trim();
@@ -243,40 +276,67 @@
       return;
     }
 
-    const finalPayload = buildPayloadWithAmount(BASE_PAYLOAD, amount);
-    const qrUrl =
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
-      encodeURIComponent(finalPayload);
-    qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" style="width:200px;height:200px;object-fit:contain;">`;
-    document.getElementById("pixBox").classList.remove("hidden");
-    pixGenerated = true;
-
-    // envia PIX para planilha
-    const payload = {
-      action: "submit",
-      name,
-      email,
-      phone,
-      item_id: "PIX",
-      item_label: "Contribuição PIX",
-      comment: "",
-      type: "pix",
-      amount: amount.toFixed(2).replace(".", ","),
-      timestamp: new Date().toISOString(),
-      comment_visible: "TRUE",
-    };
-    const ok = await postToSheet(payload);
-    if (!ok) {
-      console.warn("⚠️ Falha ao registrar contribuição PIX na planilha");
+    // pega basePayload da CONFIG (ou tenta recarregar se estiver vazio)
+    let basePayload = getBasePayloadFromConfig();
+    if (!basePayload) {
+      // tenta recarregar config caso o usuário tenha entrado rápido demais
+      await fetchConfig();
+      basePayload = getBasePayloadFromConfig();
     }
 
-    // PIX copia e cola (payload completo com valor)
-    copyPixKey.onclick = () => {
-      navigator.clipboard
-        .writeText(finalPayload)
-        .then(() => alert("Código PIX copiado!"))
-        .catch(() => prompt("Copie:", finalPayload));
-    };
+    if (!basePayload) {
+      // se ainda não existir, usa fallback (você pode remover esse fallback se quiser erro estrito)
+      console.warn("Nenhum basePayload na planilha — usando fallback local.");
+      basePayload = FALLBACK_BASE_PAYLOAD;
+      // se preferir forçar erro, comente as duas linhas acima e descomente abaixo:
+      // alert("⚠️ Nenhum código PIX configurado na planilha.");
+      // return;
+    }
+
+    try {
+      const finalPayload = buildPayloadWithAmount(basePayload, amount);
+      lastFinalPayload = finalPayload; // guarda para referência
+      const qrUrl =
+        "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
+        encodeURIComponent(finalPayload);
+      qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" style="width:200px;height:200px;object-fit:contain;">`;
+      document.getElementById("pixBox").classList.remove("hidden");
+      pixGenerated = true;
+
+      // registra a contribuição PIX na planilha (opcional mas já estava no seu fluxo)
+      const payload = {
+        action: "submit",
+        name,
+        email,
+        phone,
+        item_id: "PIX",
+        item_label: "Contribuição PIX",
+        comment: "",
+        type: "pix",
+        amount: amount.toFixed(2).replace(".", ","),
+        timestamp: new Date().toISOString(),
+        comment_visible: "TRUE",
+      };
+      const ok = await postToSheet(payload);
+      if (!ok) {
+        console.warn("⚠️ Falha ao registrar contribuição PIX na planilha");
+      }
+
+      // garante que o botão de copiar copie exatamente o payload do QR gerado
+      copyPixKey.onclick = () => {
+        const toCopy = lastFinalPayload || finalPayload;
+        navigator.clipboard
+          .writeText(toCopy)
+          .then(() => alert("Código PIX copiado!"))
+          .catch(() => {
+            // fallback manual caso a API de clipboard falhe
+            prompt("Copie o código PIX abaixo (CTRL+C):", toCopy);
+          });
+      };
+    } catch (e) {
+      console.error("Erro ao gerar PIX:", e);
+      alert("Erro ao gerar QR PIX. Veja console para mais detalhes.");
+    }
   }
 
   // === Eventos ===
@@ -299,9 +359,7 @@
       window.scrollTo({ top: pixPanel.offsetTop - 20, behavior: "smooth" });
     });
 
-    document
-      .getElementById("generatePix")
-      .addEventListener("click", generatePixPayload);
+    document.getElementById("generatePix").addEventListener("click", generatePixPayload);
     closePix.addEventListener("click", () => pixPanel.classList.add("hidden"));
 
     commentToggle.addEventListener("click", () => {
