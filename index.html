@@ -46,38 +46,34 @@
           <button id="submitBtn" type="submit" class="btn primary">Enviar presente</button>
           <button id="pixBtn" type="button" class="btn outline">Contribuir com PIX</button>
         </div>
-        <div id="pixWarning" class="warning hidden">
-          ⚠️ Preencha nome e email antes de contribuir com PIX.
-        </div>
       </form>
     </section>
 
     <section id="pixPanel" class="panel hidden">
       <h2>Contribuição via PIX</h2>
       <div class="pix-row">
-        <label>Valor para PIX</label>
-        <input id="pixAmount" placeholder="R$ 0,00" inputmode="numeric">
+        <label>Valor para PIX (R$)</label>
+        <input id="pixAmount" placeholder="R$ 0,00" inputmode="decimal">
       </div>
-
       <div class="pix-row small">
         <button id="generatePix" class="btn primary">Gerar QR</button>
         <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
         <button id="closePix" class="btn ghost">Fechar</button>
       </div>
-
       <div id="pixBox" class="pix-box hidden">
-        <div id="qrWrap" class="qr-wrap">QR aparecerá aqui</div>
+        <div id="qrWrap" class="qr-wrap"></div>
       </div>
     </section>
 
     <section class="panel comments-panel">
       <h2>Mensagens 💌</h2>
-      <button id="openCommentBox" type="button" class="btn outline">Comentar</button>
-      <div id="commentWarning" class="warning hidden"></div>
+      <button id="commentToggle" class="btn outline">💬 Comentar</button>
+      <div id="commentGlobalError" class="error-msg hidden"></div>
 
-      <div id="commentBox" class="hidden">
-        <textarea id="comment" name="comment" placeholder="Deixe uma mensagem carinhosa..."></textarea>
+      <div id="commentPanel" class="hidden" style="margin-top:10px;">
+        <textarea id="comment" placeholder="Deixe sua mensagem..."></textarea>
         <button id="sendComment" class="btn primary small">Enviar comentário</button>
+        <div id="commentError" class="error-msg hidden"></div>
       </div>
 
       <div id="commentsList">

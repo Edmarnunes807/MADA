@@ -7,12 +7,13 @@
   --muted:#7a5a63;
   --radius:12px;
   --shadow: 0 8px 24px rgba(72,32,52,0.08);
+  --mono: "Courier New", monospace;
 }
 
 *{box-sizing:border-box}
 body{
   margin:0;
-  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, Arial;
+  font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
   background: linear-gradient(180deg,var(--bg),#fff);
   color:var(--text);
 }
@@ -48,23 +49,23 @@ input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px soli
 textarea{min-height:88px;resize:vertical}
 .req{color:#bf2b63}
 
-.actions{display:flex;gap:12px;flex-wrap:wrap}
+.actions{display:flex;gap:12px}
 .btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
 .btn.primary{background:linear-gradient(90deg,var(--accent),#ff5f98);color:white;box-shadow:0 8px 18px rgba(255,95,152,0.12)}
 .btn.outline{background:transparent;border:1px solid rgba(72,32,52,0.06);color:var(--text)}
 .btn.ghost{background:transparent;color:var(--muted)}
-.btn.small{padding:6px 10px;font-size:13px;margin-top:8px}
+.btn.small{padding:6px 8px;font-size:13px}
+.small{display:flex;gap:8px;align-items:center}
 
-.pix-row{margin-bottom:12px}
-.pix-box{display:flex;justify-content:center;margin-top:16px}
+.pix-box{display:flex;gap:18px;align-items:center;margin-top:12px;flex-wrap:wrap;justify-content:center}
 .qr-wrap{width:200px;height:200px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
-
-.warning{color:#c62828;font-size:14px;margin-top:6px}
-.hidden{display:none}
-
-.comments-panel .comment{background:#fff;padding:12px;border-radius:10px;margin-top:10px;border:1px solid rgba(0,0,0,0.05)}
+.hint{color:var(--muted)}
+.comments-panel .comment{background:linear-gradient(180deg,#fff,#fff);padding:12px;border-radius:10px;margin-top:10px;border:1px solid rgba(0,0,0,0.03)}
 .comment .who{font-weight:700;color:#6b2140}
 .comment .email{font-size:13px;color:var(--muted);margin-top:4px}
 .comment .body{margin-top:8px;color:var(--text)}
 
 .footer{text-align:center;color:var(--muted);margin-top:16px}
+
+.hidden{display:none}
+.error-msg{margin-top:6px;color:#c62828;font-size:13px}
