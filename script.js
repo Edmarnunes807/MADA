@@ -27,7 +27,12 @@
   let DADOS = [];
   let COUNTS = {};
 
-  // === Funções de inicialização ===
+  // === PIX Config ===
+  // payload base sem valor fixo (sua chave PIX, nome, cidade, txid etc.)
+  const BASE_PAYLOAD =
+    "00020126580014BR.GOV.BCB.PIX013656daaa2c-6501-49c4-abd6-64f60a8b3c2c5204000053039865802BR5917Edmar Rocha Nunes6009SAO PAULO62140510btpjCxgcJj63045C24";
+
+  // === Inicialização ===
   async function boot() {
     await loadAll();
     setupListeners();
@@ -192,8 +197,6 @@
   }
 
   // === PIX ===
-
-  // CRC16
   function crc16Str(str) {
     const bytes = [];
     for (let i = 0; i < str.length; i++) bytes.push(str.charCodeAt(i));
@@ -222,24 +225,27 @@
   }
 
   function generatePixPayload() {
-    const amount = (pixAmountInput.value || "").replace(",", ".");
-    if (!amount || isNaN(amount)) {
+    let raw = pixAmountInput.value.replace(/\D/g, "");
+    if (raw === "") raw = "0";
+    const amount = parseFloat((parseInt(raw, 10) / 100).toFixed(2));
+
+    if (!amount || isNaN(amount) || amount <= 0) {
       alert("Digite um valor válido.");
       return;
     }
+
     const finalPayload = buildPayloadWithAmount(BASE_PAYLOAD, amount);
     const qrUrl =
-      "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
+      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
       encodeURIComponent(finalPayload);
 
     qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" 
-                          style="width:100%;height:100%;object-fit:contain;cursor:pointer">`;
+                          style="width:200px;height:200px;object-fit:contain;cursor:pointer;display:block;margin:0 auto;">`;
 
     document.getElementById("pixBox").classList.remove("hidden");
 
     // Copiar PIX
     copyPixKey.onclick = () => {
-      // Payload salvo no data-payload
       const payload = qrWrap.querySelector("img")?.getAttribute("data-payload");
       if (!payload) {
         alert("Nenhum PIX gerado ainda.");
@@ -291,6 +297,16 @@
 
     closePix.addEventListener("click", () => {
       pixPanel.classList.add("hidden");
+    });
+
+    // máscara moeda
+    pixAmountInput.addEventListener("input", () => {
+      let v = pixAmountInput.value.replace(/\D/g, "");
+      if (v === "") v = "0";
+      v = (parseInt(v, 10) / 100).toFixed(2) + "";
+      v = v.replace(".", ",");
+      v = "R$ " + v.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+      pixAmountInput.value = v;
     });
   }
 
