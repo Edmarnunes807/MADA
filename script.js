@@ -270,10 +270,11 @@
       console.warn("⚠️ Falha ao registrar contribuição PIX na planilha");
     }
 
+    // PIX copia e cola (payload completo com valor)
     copyPixKey.onclick = () => {
       navigator.clipboard
         .writeText(finalPayload)
-        .then(() => alert("PIX copiado!"))
+        .then(() => alert("Código PIX copiado!"))
         .catch(() => prompt("Copie:", finalPayload));
     };
   }
