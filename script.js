@@ -34,7 +34,7 @@
   let pixGenerated = false;
   let lastFinalPayload = ""; // guarda o último payload gerado (para cópia)
 
-  // fallback (se quiser manter um default local)
+  // fallback (se não encontrar na planilha)
   const FALLBACK_BASE_PAYLOAD =
     "00020126580014BR.GOV.BCB.PIX013656daaa2c-6501-49c4-abd6-64f60a8b3c2c5204000053039865802BR5917Edmar Rocha Nunes6009SAO PAULO62140510btpjCxgcJj63045C24";
 
@@ -142,7 +142,6 @@
     window.COMMENTS.slice().reverse().forEach((c) => {
       const div = document.createElement("div");
       div.className = "comment";
-      // usar pre-wrap para manter quebras; o CSS pode necesitar ajuste se não quebrar corretamente
       div.innerHTML = `<div class="who">${escapeHtml(c.name || "Anônimo")}</div>
                        <div class="email">${escapeHtml(c.email || "")}</div>
                        <div class="body">${escapeHtml(c.comment || "")}</div>`;
@@ -150,7 +149,6 @@
     });
   }
 
-  // protege contra injeção simples (não substitui sanitização no servidor)
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, "&amp;")
@@ -243,7 +241,6 @@
     return payload + crc;
   }
 
-  // tenta extrair o basePayload do CONFIG com vários nomes possíveis
   function getBasePayloadFromConfig() {
     if (!CONFIG || typeof CONFIG !== "object") return "";
     return (
@@ -276,26 +273,19 @@
       return;
     }
 
-    // pega basePayload da CONFIG (ou tenta recarregar se estiver vazio)
     let basePayload = getBasePayloadFromConfig();
     if (!basePayload) {
-      // tenta recarregar config caso o usuário tenha entrado rápido demais
       await fetchConfig();
       basePayload = getBasePayloadFromConfig();
     }
-
     if (!basePayload) {
-      // se ainda não existir, usa fallback (você pode remover esse fallback se quiser erro estrito)
       console.warn("Nenhum basePayload na planilha — usando fallback local.");
       basePayload = FALLBACK_BASE_PAYLOAD;
-      // se preferir forçar erro, comente as duas linhas acima e descomente abaixo:
-      // alert("⚠️ Nenhum código PIX configurado na planilha.");
-      // return;
     }
 
     try {
       const finalPayload = buildPayloadWithAmount(basePayload, amount);
-      lastFinalPayload = finalPayload; // guarda para referência
+      lastFinalPayload = finalPayload;
       const qrUrl =
         "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
         encodeURIComponent(finalPayload);
@@ -303,7 +293,6 @@
       document.getElementById("pixBox").classList.remove("hidden");
       pixGenerated = true;
 
-      // registra a contribuição PIX na planilha (opcional mas já estava no seu fluxo)
       const payload = {
         action: "submit",
         name,
@@ -317,21 +306,14 @@
         timestamp: new Date().toISOString(),
         comment_visible: "TRUE",
       };
-      const ok = await postToSheet(payload);
-      if (!ok) {
-        console.warn("⚠️ Falha ao registrar contribuição PIX na planilha");
-      }
+      await postToSheet(payload);
 
-      // garante que o botão de copiar copie exatamente o payload do QR gerado
       copyPixKey.onclick = () => {
         const toCopy = lastFinalPayload || finalPayload;
         navigator.clipboard
           .writeText(toCopy)
           .then(() => alert("Código PIX copiado!"))
-          .catch(() => {
-            // fallback manual caso a API de clipboard falhe
-            prompt("Copie o código PIX abaixo (CTRL+C):", toCopy);
-          });
+          .catch(() => prompt("Copie o código PIX abaixo:", toCopy));
       };
     } catch (e) {
       console.error("Erro ao gerar PIX:", e);
