@@ -231,28 +231,64 @@
     const qrUrl =
       "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" +
       encodeURIComponent(finalPayload);
-    qrWrap.innerHTML = `<img src="${qrUrl}" alt="QR PIX" style="width:100%;height:100%;object-fit:contain;cursor:pointer">`;
-    copyPixKey.onclick = async () => {
-      try {
-        await navigator.clipboard.writeText(finalPayload);
-        alert("Código Pix copiado!");
-      } catch (e) {
-        prompt("Copie o código Pix:", finalPayload);
+
+    qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" 
+                          style="width:100%;height:100%;object-fit:contain;cursor:pointer">`;
+
+    document.getElementById("pixBox").classList.remove("hidden");
+
+    // Copiar PIX
+    copyPixKey.onclick = () => {
+      // Payload salvo no data-payload
+      const payload = qrWrap.querySelector("img")?.getAttribute("data-payload");
+      if (!payload) {
+        alert("Nenhum PIX gerado ainda.");
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(payload).then(() => {
+          alert("Código PIX copiado!");
+        }).catch(() => fallbackCopy(payload));
+      } else {
+        fallbackCopy(payload);
       }
     };
-    document.getElementById("pixBox").classList.remove("hidden");
+  }
+
+  function fallbackCopy(text) {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    try {
+      document.execCommand("copy");
+      alert("Código PIX copiado!");
+    } catch (err) {
+      prompt("Copie o código PIX:", text);
+    }
+    document.body.removeChild(textarea);
   }
 
   // === Eventos ===
   function setupListeners() {
     listFilter.addEventListener("change", renderItemSelect);
     giftForm.addEventListener("submit", submitGift);
-    pixBtn.addEventListener("click", () => {
-      pixPanel.classList.toggle("hidden");
+
+    // Ajuste para mobile
+    pixBtn.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      pixPanel.classList.remove("hidden");
+      window.scrollTo({ top: pixPanel.offsetTop - 20, behavior: "smooth" });
     });
+
     document
       .getElementById("generatePix")
       .addEventListener("click", generatePixPayload);
+
     closePix.addEventListener("click", () => {
       pixPanel.classList.add("hidden");
     });

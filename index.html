@@ -54,28 +54,27 @@
       </form>
     </section>
 
-    <!-- PIX Panel Reformulado -->
-    <section id="pixPanel" class="panel hidden pix-panel">
-      <h2>Contribuição via PIX 💸</h2>
-
-      <div class="pix-input">
-        <label for="pixAmount">Digite o valor (R$)</label>
+    <!-- PIX -->
+    <section id="pixPanel" class="panel hidden">
+      <h2>Contribuição via PIX</h2>
+      <div class="pix-row">
+        <label>Digite o valor (R$)</label>
         <input id="pixAmount" placeholder="Ex: 25.00" inputmode="decimal">
-        <button id="generatePix" class="btn primary full">Gerar PIX</button>
+      </div>
+
+      <div class="pix-row">
+        <button id="generatePix" type="button" class="btn primary">Gerar PIX</button>
       </div>
 
       <div id="pixBox" class="pix-box hidden">
-        <div class="qr-wrap">
-          <div id="qrWrap" class="qr-placeholder">QR aparecerá aqui</div>
-        </div>
-
+        <div id="qrWrap" class="qr-wrap">QR PIX</div>
         <div class="pix-actions">
-          <button id="copyPixKey" class="btn primary full">Copiar chave PIX</button>
+          <button id="copyPixKey" type="button" class="btn">Copiar chave PIX</button>
         </div>
       </div>
 
-      <div class="pix-footer">
-        <button id="closePix" class="btn ghost full">Fechar</button>
+      <div class="pix-row small">
+        <button id="closePix" type="button" class="btn ghost">Fechar</button>
       </div>
     </section>
 
