@@ -60,10 +60,25 @@ textarea{min-height:88px;resize:vertical}
 .pix-box{display:flex;gap:18px;align-items:center;margin-top:12px;flex-wrap:wrap;justify-content:center}
 .qr-wrap{width:200px;height:200px;background:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(0,0,0,0.05)}
 .hint{color:var(--muted)}
-.comments-panel .comment{background:linear-gradient(180deg,#fff,#fff);padding:12px;border-radius:10px;margin-top:10px;border:1px solid rgba(0,0,0,0.03)}
+
+.comments-panel .comment{
+  background:linear-gradient(180deg,#fff,#fff);
+  padding:12px;
+  border-radius:10px;
+  margin-top:10px;
+  border:1px solid rgba(0,0,0,0.03);
+}
+
 .comment .who{font-weight:700;color:#6b2140}
 .comment .email{font-size:13px;color:var(--muted);margin-top:4px}
-.comment .body{margin-top:8px;color:var(--text)}
+
+.comment .body{
+  margin-top:8px;
+  color:var(--text);
+  word-wrap: break-word;      /* quebra palavras longas */
+  overflow-wrap: break-word;  /* garante compatibilidade */
+  white-space: pre-wrap;      /* preserva quebras de linha */
+}
 
 .footer{text-align:center;color:var(--muted);margin-top:16px}
 

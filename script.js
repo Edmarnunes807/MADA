@@ -151,8 +151,8 @@
     const phone = phoneInput.value.trim();
     const comment = commentInput.value.trim();
 
-    if (!name || !email) {
-      showInlineError("Preencha nome e email para comentar.");
+    if (!name || !email || !isValidPhone(phone)) {
+      showInlineError("Preencha nome, email e telefone para comentar.");
       return;
     }
     if (!comment) {
@@ -230,8 +230,8 @@
     const email = emailInput.value.trim();
     const phone = phoneInput.value.trim();
 
-    if (!name || !email) {
-      alert("Preencha nome e email antes de gerar o PIX.");
+    if (!name || !email || !isValidPhone(phone)) {
+      alert("Preencha nome, email e telefone corretamente antes de gerar o PIX.");
       return;
     }
 
@@ -283,10 +283,21 @@
     listFilter.addEventListener("change", renderItemSelect);
     giftForm.addEventListener("submit", (ev) => ev.preventDefault());
     submitBtn.addEventListener("click", submitGift);
+
     pixBtn.addEventListener("click", () => {
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const phone = phoneInput.value.trim();
+
+      if (!name || !email || !isValidPhone(phone)) {
+        alert("Preencha nome, email e telefone antes de continuar.");
+        return;
+      }
+
       pixPanel.classList.remove("hidden");
       window.scrollTo({ top: pixPanel.offsetTop - 20, behavior: "smooth" });
     });
+
     document
       .getElementById("generatePix")
       .addEventListener("click", generatePixPayload);
@@ -295,18 +306,32 @@
     commentToggle.addEventListener("click", () => {
       const name = nameInput.value.trim();
       const email = emailInput.value.trim();
-      commentGlobalError.classList.add("hidden");
-      if (!name || !email) {
+      if (!name || !email || !isValidPhone(phoneInput.value.trim())) {
         commentGlobalError.textContent =
-          "⚠️ Preencha nome e e-mail antes de comentar.";
+          "⚠️ Preencha nome, e-mail e telefone antes de comentar.";
         commentGlobalError.classList.remove("hidden");
         return;
       }
+      commentGlobalError.classList.add("hidden");
       commentPanel.classList.toggle("hidden");
     });
 
     sendCommentBtn.addEventListener("click", sendComment);
 
+    // máscara telefone
+    phoneInput.addEventListener("input", () => {
+      let v = phoneInput.value.replace(/\D/g, "");
+      if (v.length > 11) v = v.slice(0, 11);
+      if (v.length > 6) {
+        phoneInput.value = `(${v.slice(0, 2)}) ${v.slice(2, 7)}-${v.slice(7)}`;
+      } else if (v.length > 2) {
+        phoneInput.value = `(${v.slice(0, 2)}) ${v.slice(2)}`;
+      } else if (v.length > 0) {
+        phoneInput.value = `(${v}`;
+      }
+    });
+
+    // máscara moeda
     pixAmountInput.addEventListener("input", () => {
       let v = pixAmountInput.value.replace(/\D/g, "");
       if (v === "") v = "0";
@@ -323,8 +348,8 @@
     const phone = phoneInput.value.trim();
     const item_id = itemSelect.value;
 
-    if (!name || !email || !item_id) {
-      alert("Preencha nome, email e escolha um item.");
+    if (!name || !email || !isValidPhone(phone) || !item_id) {
+      alert("Preencha nome, email, telefone e escolha um item.");
       return;
     }
 
@@ -357,6 +382,10 @@
 
     submitBtn.disabled = false;
     submitBtn.textContent = "Enviar presente";
+  }
+
+  function isValidPhone(phone) {
+    return /^\(\d{2}\)\s\d{5}-\d{4}$/.test(phone);
   }
 
   boot();
