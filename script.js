@@ -28,7 +28,6 @@
   let COUNTS = {};
 
   // === PIX Config ===
-  // payload base sem valor fixo (sua chave PIX, nome, cidade, txid etc.)
   const BASE_PAYLOAD =
     "00020126580014BR.GOV.BCB.PIX013656daaa2c-6501-49c4-abd6-64f60a8b3c2c5204000053039865802BR5917Edmar Rocha Nunes6009SAO PAULO62140510btpjCxgcJj63045C24";
 
@@ -188,7 +187,12 @@
       for (const k in obj) {
         form.append(k, obj[k]);
       }
-      const res = await fetch(SHEET_ENDPOINT, { method: "POST", body: form });
+      const body = decodeURIComponent(form.toString().replace(/\+/g, " ")); // 🔑 corrige o "+"
+      const res = await fetch(SHEET_ENDPOINT, {
+        method: "POST",
+        body,
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
       const txt = await res.text();
       return /ok/i.test(txt);
     } catch (e) {
@@ -244,7 +248,6 @@
 
     document.getElementById("pixBox").classList.remove("hidden");
 
-    // Copiar PIX
     copyPixKey.onclick = () => {
       const payload = qrWrap.querySelector("img")?.getAttribute("data-payload");
       if (!payload) {
@@ -284,7 +287,6 @@
     listFilter.addEventListener("change", renderItemSelect);
     giftForm.addEventListener("submit", submitGift);
 
-    // Ajuste para mobile
     pixBtn.addEventListener("click", (ev) => {
       ev.preventDefault();
       pixPanel.classList.remove("hidden");
@@ -299,7 +301,6 @@
       pixPanel.classList.add("hidden");
     });
 
-    // máscara moeda
     pixAmountInput.addEventListener("input", () => {
       let v = pixAmountInput.value.replace(/\D/g, "");
       if (v === "") v = "0";
