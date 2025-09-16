@@ -10,10 +10,9 @@
   <main class="wrap">
     <header class="top">
       <h1>Chá de Panela 💕</h1>
-      <p class="subtitle">Escolha um presente ou contribua via PIX — obrigada pelo carinho!</p>
+      <p class="subtitle">Escolha um presente da lista ou contribua via PIX — obrigada pelo carinho!</p>
     </header>
 
-    <!-- Form principal -->
     <section class="panel">
       <form id="giftForm" class="form">
         <div class="row">
@@ -37,9 +36,9 @@
         </div>
 
         <div class="row">
-          <label>Item escolhido</label>
-          <select id="itemSelect">
-            <option value="">Selecione...</option>
+          <label>Item escolhido <span class="req">*</span></label>
+          <select id="itemSelect" required>
+            <option value="">Carregando...</option>
           </select>
         </div>
 
@@ -47,37 +46,43 @@
           <button id="submitBtn" type="submit" class="btn primary">Enviar presente</button>
           <button id="pixBtn" type="button" class="btn outline">Contribuir com PIX</button>
         </div>
+        <div id="pixWarning" class="warning hidden">
+          ⚠️ Preencha nome e email antes de contribuir com PIX.
+        </div>
       </form>
     </section>
 
-    <!-- Painel PIX -->
     <section id="pixPanel" class="panel hidden">
       <h2>Contribuição via PIX</h2>
-      <input id="pixAmount" value="R$ 0,00" inputmode="decimal">
-      <button id="generatePix" class="btn primary">Gerar QR</button>
+      <div class="pix-row">
+        <label>Valor para PIX</label>
+        <input id="pixAmount" placeholder="R$ 0,00" inputmode="numeric">
+      </div>
 
-      <div id="pixBox" class="hidden">
-        <div id="qrWrap"></div>
+      <div class="pix-row small">
+        <button id="generatePix" class="btn primary">Gerar QR</button>
         <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
+        <button id="closePix" class="btn ghost">Fechar</button>
       </div>
 
-      <button id="closePix" class="btn ghost">Fechar</button>
-    </section>
-
-    <!-- Botão comentar -->
-    <section class="panel comment-panel">
-      <button id="openCommentBox" class="btn outline" disabled>Comentar 💬</button>
-
-      <div id="commentBox" class="hidden">
-        <textarea id="commentInput" placeholder="Escreva sua mensagem..."></textarea>
-        <button id="sendComment" class="btn primary">Enviar comentário</button>
+      <div id="pixBox" class="pix-box hidden">
+        <div id="qrWrap" class="qr-wrap">QR aparecerá aqui</div>
       </div>
     </section>
 
-    <!-- Comentários -->
     <section class="panel comments-panel">
       <h2>Mensagens 💌</h2>
-      <div id="commentsList"><p class="hint">Carregando...</p></div>
+      <button id="openCommentBox" type="button" class="btn outline">Comentar</button>
+      <div id="commentWarning" class="warning hidden"></div>
+
+      <div id="commentBox" class="hidden">
+        <textarea id="comment" name="comment" placeholder="Deixe uma mensagem carinhosa..."></textarea>
+        <button id="sendComment" class="btn primary small">Enviar comentário</button>
+      </div>
+
+      <div id="commentsList">
+        <p class="hint">Carregando comentários...</p>
+      </div>
     </section>
 
     <footer class="footer">Obrigada pelo carinho — qualquer dúvida, entre em contato!</footer>
