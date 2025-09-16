@@ -10,9 +10,10 @@
   <main class="wrap">
     <header class="top">
       <h1>Chá de Panela 💕</h1>
-      <p class="subtitle">Escolha um presente da lista ou contribua via PIX — obrigada pelo carinho!</p>
+      <p class="subtitle">Escolha um presente ou contribua via PIX — obrigada pelo carinho!</p>
     </header>
 
+    <!-- Form principal -->
     <section class="panel">
       <form id="giftForm" class="form">
         <div class="row">
@@ -36,15 +37,10 @@
         </div>
 
         <div class="row">
-          <label>Item escolhido <span class="req">*</span></label>
-          <select id="itemSelect" required>
-            <option value="">Carregando...</option>
+          <label>Item escolhido</label>
+          <select id="itemSelect">
+            <option value="">Selecione...</option>
           </select>
-        </div>
-
-        <div class="row">
-          <label>Comentário (visível no site)</label>
-          <textarea id="comment" name="comment" placeholder="Deixe uma mensagem carinhosa..."></textarea>
         </div>
 
         <div class="actions">
@@ -54,35 +50,34 @@
       </form>
     </section>
 
-    <!-- PIX -->
+    <!-- Painel PIX -->
     <section id="pixPanel" class="panel hidden">
       <h2>Contribuição via PIX</h2>
-      <div class="pix-row">
-        <label>Digite o valor (R$)</label>
-        <input id="pixAmount" placeholder="R$ 0,00" inputmode="decimal">
+      <input id="pixAmount" value="R$ 0,00" inputmode="decimal">
+      <button id="generatePix" class="btn primary">Gerar QR</button>
+
+      <div id="pixBox" class="hidden">
+        <div id="qrWrap"></div>
+        <button id="copyPixKey" class="btn outline">Copiar chave PIX</button>
       </div>
 
-      <div class="pix-row">
-        <button id="generatePix" type="button" class="btn primary">Gerar PIX</button>
-      </div>
+      <button id="closePix" class="btn ghost">Fechar</button>
+    </section>
 
-      <div id="pixBox" class="pix-box hidden">
-        <div id="qrWrap" class="qr-wrap">QR PIX</div>
-        <div class="pix-actions">
-          <button id="copyPixKey" type="button" class="btn">Copiar chave PIX</button>
-        </div>
-      </div>
+    <!-- Botão comentar -->
+    <section class="panel comment-panel">
+      <button id="openCommentBox" class="btn outline" disabled>Comentar 💬</button>
 
-      <div class="pix-row small">
-        <button id="closePix" type="button" class="btn ghost">Fechar</button>
+      <div id="commentBox" class="hidden">
+        <textarea id="commentInput" placeholder="Escreva sua mensagem..."></textarea>
+        <button id="sendComment" class="btn primary">Enviar comentário</button>
       </div>
     </section>
 
+    <!-- Comentários -->
     <section class="panel comments-panel">
       <h2>Mensagens 💌</h2>
-      <div id="commentsList">
-        <p class="hint">Carregando comentários...</p>
-      </div>
+      <div id="commentsList"><p class="hint">Carregando...</p></div>
     </section>
 
     <footer class="footer">Obrigada pelo carinho — qualquer dúvida, entre em contato!</footer>

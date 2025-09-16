@@ -7,10 +7,8 @@
   --muted:#7a5a63;
   --radius:12px;
   --shadow: 0 8px 24px rgba(72,32,52,0.08);
-  --mono: "Courier New", monospace;
 }
 
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
@@ -18,164 +16,34 @@ body{
   color:var(--text);
 }
 
-.wrap{
-  max-width:980px;
-  margin:28px auto;
-  padding:18px;
-}
-
-.top{
-  text-align:center;
-  background:linear-gradient(90deg,var(--accent-2),#fff);
-  padding:22px;
-  border-radius:16px;
-  box-shadow:var(--shadow);
-}
-
-.top h1{margin:0;font-size:30px;color:#6b2140;font-family: "Playfair Display", serif}
+.wrap{max-width:980px;margin:28px auto;padding:18px}
+.top{text-align:center;background:linear-gradient(90deg,var(--accent-2),#fff);padding:22px;border-radius:16px;box-shadow:var(--shadow)}
+.top h1{margin:0;font-size:30px;color:#6b2140;font-family:"Playfair Display",serif}
 .subtitle{margin:6px 0 0;color:var(--muted)}
 
-.panel{
-  margin-top:18px;
-  background:var(--card);
-  border-radius:var(--radius);
-  padding:16px;
-  box-shadow:var(--shadow);
-}
+.panel{margin-top:18px;background:var(--card);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
 
 .form .row{margin-bottom:12px}
 .form label{display:block;font-weight:600;color:var(--muted);margin-bottom:6px}
-input,select,textarea{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid rgba(0,0,0,0.06);
-  font-size:14px
-}
+input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid rgba(0,0,0,0.06);font-size:14px}
 textarea{min-height:88px;resize:vertical}
 .req{color:#bf2b63}
 
 .actions{display:flex;gap:12px;flex-wrap:wrap}
-.btn{
-  padding:10px 14px;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-  font-weight:700
-}
-.btn.primary{
-  background:linear-gradient(90deg,var(--accent),#ff5f98);
-  color:white;
-  box-shadow:0 8px 18px rgba(255,95,152,0.12)
-}
-.btn.outline{
-  background:transparent;
-  border:2px solid var(--accent);
-  color:var(--accent)
-}
+.btn{padding:10px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700}
+.btn.primary{background:linear-gradient(90deg,var(--accent),#ff5f98);color:white;box-shadow:0 8px 18px rgba(255,95,152,0.12)}
+.btn.outline{background:transparent;border:2px solid var(--accent);color:var(--accent)}
 .btn.ghost{background:transparent;color:var(--muted)}
-.btn.small{padding:6px 8px;font-size:13px}
-.small{display:flex;gap:8px;align-items:center}
+
+.comment-panel{text-align:center}
+#commentBox{margin-top:12px}
+#commentInput{width:100%;min-height:80px;margin-bottom:10px}
 
 .hint{color:var(--muted)}
-.comments-panel .comment{
-  background:linear-gradient(180deg,#fff,#fff);
-  padding:12px;
-  border-radius:10px;
-  margin-bottom:10px;
-  border:1px solid rgba(0,0,0,0.03)
-}
+.comments-panel .comment{background:#fff;padding:12px;border-radius:10px;margin-bottom:10px;border:1px solid rgba(0,0,0,0.03)}
 .comment .who{font-weight:700;color:#6b2140}
 .comment .email{font-size:13px;color:var(--muted);margin-top:4px}
 .comment .body{margin-top:8px;color:var(--text)}
 
 .footer{text-align:center;color:var(--muted);margin-top:16px}
-
 .hidden{display:none}
-
-/* ===================== */
-/* PIX - Ajustes visuais */
-/* ===================== */
-
-/* Caixa PIX */
-#pixPanel {
-  margin-top: 20px;
-  padding: 16px;
-  background: var(--card);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-  text-align: center;
-}
-
-/* Campo valor PIX */
-#pixAmount {
-  width: 100%;
-  font-size: 18px;
-  padding: 12px;
-  margin-bottom: 18px; /* 🔹 Espaço maior abaixo do input */
-  border: 2px solid var(--accent-2);
-  border-radius: 10px;
-  text-align: center;
-  font-weight: bold;
-  color: var(--text);
-  background: #fff;
-}
-
-/* Botão Gerar PIX */
-#generatePix {
-  width: 100%;
-  margin-top: 5px;
-  margin-bottom: 18px; /* 🔹 Espaço antes do QR */
-  padding: 14px;
-  font-size: 17px;
-  font-weight: 700;
-  background: linear-gradient(90deg, var(--accent), #ff5f98);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  box-shadow: 0 6px 14px rgba(255, 95, 152, 0.15);
-  cursor: pointer;
-  transition: transform 0.2s, opacity 0.2s;
-}
-
-#generatePix:hover {
-  opacity: 0.9;
-  transform: translateY(-2px);
-}
-
-/* QR Code centralizado */
-#qrWrap {
-  margin: 20px auto;
-  display: flex;
-  justify-content: center;
-}
-
-#qrWrap img {
-  max-width: 220px;
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  background: #fff;
-  padding: 8px;
-}
-
-/* Botão copiar PIX */
-#copyPixKey {
-  display: block;
-  width: 100%;
-  margin: 10px 0 16px;
-  padding: 12px;
-  font-weight: 600;
-  border-radius: 10px;
-  background: transparent;
-  border: 2px solid var(--accent);
-  color: var(--accent);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-#copyPixKey:hover {
-  background: var(--accent);
-  color: #fff;
-}

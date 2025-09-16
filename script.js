@@ -19,41 +19,25 @@
   const nameInput = document.getElementById("name");
   const emailInput = document.getElementById("email");
   const phoneInput = document.getElementById("phone");
-  const commentInput = document.getElementById("comment");
+  const commentInput = document.getElementById("commentInput");
+  const openCommentBox = document.getElementById("openCommentBox");
+  const sendComment = document.getElementById("sendComment");
+  const commentWarning = document.getElementById("commentWarning");
 
   // state
-  let CONFIG = {};
   let ITEMS = [];
   let DADOS = [];
   let COUNTS = {};
-
-  // === PIX Config ===
-  const BASE_PAYLOAD =
-    "00020126580014BR.GOV.BCB.PIX013656daaa2c-6501-49c4-abd6-64f60a8b3c2c5204000053039865802BR5917Edmar Rocha Nunes6009SAO PAULO62140510btpjCxgcJj63045C24";
+  let pixGenerated = false;
 
   // === Inicialização ===
   async function boot() {
-    await loadAll();
-    setupListeners();
-  }
-
-  async function loadAll() {
-    await fetchConfig();
     await fetchItems();
     await fetchData();
     populateLists();
     renderItemSelect();
     renderComments();
-  }
-
-  async function fetchConfig() {
-    try {
-      const r = await fetch(`${SHEET_ENDPOINT}?action=getConfig`);
-      const j = await r.json();
-      CONFIG = j.config || {};
-    } catch (e) {
-      CONFIG = {};
-    }
+    setupListeners();
   }
 
   async function fetchItems() {
@@ -61,7 +45,7 @@
       const r = await fetch(`${SHEET_ENDPOINT}?action=getItems`);
       const j = await r.json();
       ITEMS = j.items || [];
-    } catch (e) {
+    } catch {
       ITEMS = [];
     }
   }
@@ -76,7 +60,7 @@
         const id = row.item_id || row.item || "";
         if (id) COUNTS[id] = (COUNTS[id] || 0) + 1;
       });
-    } catch (e) {
+    } catch {
       DADOS = [];
       COUNTS = {};
     }
@@ -94,20 +78,14 @@
   }
 
   function renderItemSelect() {
-    const chosen =
-      listFilter.value ||
-      (listFilter.options[0] && listFilter.options[0].value) ||
-      "";
+    const chosen = listFilter.value || "";
     itemSelect.innerHTML = '<option value="">-- selecione --</option>';
     ITEMS.filter((it) => (it.list || "Geral") === chosen).forEach((it) => {
       const id = String(it.id);
       const label = it.label || id;
-      const limit = Number(it.limit || 1);
-      const count = Number(COUNTS[id] || 0);
       const opt = document.createElement("option");
       opt.value = id;
-      opt.textContent = `${label}${count >= limit ? " — esgotado" : ""}`;
-      if (count >= limit) opt.disabled = true;
+      opt.textContent = label;
       itemSelect.appendChild(opt);
     });
   }
@@ -115,8 +93,7 @@
   function renderComments() {
     commentsList.innerHTML = "";
     const visibleComments = DADOS.filter(
-      (r) =>
-        r.comment && String(r.comment_visible || "TRUE").toUpperCase() !== "FALSE"
+      (r) => r.comment && String(r.comment_visible || "TRUE").toUpperCase() !== "FALSE"
     );
     if (visibleComments.length === 0) {
       commentsList.innerHTML =
@@ -133,174 +110,94 @@
     });
   }
 
-  // === Submissão de presentes ===
-  async function submitGift(ev) {
-    ev.preventDefault();
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
-    const phone = phoneInput.value.trim();
+  // === Comentários ===
+  openCommentBox.addEventListener("click", () => {
     const item_id = itemSelect.value;
-    const comment = commentInput.value.trim();
 
-    if (!name || !email || !item_id) {
-      alert("Preencha os campos obrigatórios.");
+    if (!item_id && !pixGenerated) {
+      commentWarning.classList.remove("hidden");
       return;
     }
 
-    submitBtn.disabled = true;
-    submitBtn.textContent = "Enviando...";
+    commentWarning.classList.add("hidden");
+    document.getElementById("commentBox").classList.toggle("hidden");
+  });
 
-    const itemObj = ITEMS.find((x) => String(x.id) === item_id) || {};
+  sendComment.addEventListener("click", async () => {
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+    const comment = commentInput.value.trim();
+    const item_id = itemSelect.value;
+
+    if (!name || !email || !comment) {
+      alert("Preencha nome, email e comentário.");
+      return;
+    }
+    if (!item_id && !pixGenerated) {
+      alert("Selecione um presente ou gere um PIX antes de comentar.");
+      return;
+    }
+
     const payload = {
       action: "submit",
       name,
       email,
-      phone,
-      item_id,
-      item_label: itemObj.label || item_id,
+      phone: phoneInput.value.trim(),
+      item_id: item_id || "PIX",
+      item_label: item_id ? "Comentário Presente" : "Comentário PIX",
       comment,
-      type: "present",
-      amount: "",
+      type: item_id ? "present_comment" : "pix_comment",
       timestamp: new Date().toISOString(),
       comment_visible: "TRUE",
     };
 
     const ok = await postToSheet(payload);
     if (ok) {
-      alert("Obrigada! Seu presente foi registrado 💖");
+      alert("Comentário enviado!");
+      commentInput.value = "";
+      document.getElementById("commentBox").classList.add("hidden");
       await fetchData();
       renderComments();
-      renderItemSelect();
-      commentInput.value = "";
-      itemSelect.value = "";
     } else {
-      alert("Erro ao registrar. Tente novamente.");
+      alert("Erro ao enviar comentário.");
     }
-
-    submitBtn.disabled = false;
-    submitBtn.textContent = "Enviar presente";
-  }
+  });
 
   async function postToSheet(obj) {
     try {
       const form = new URLSearchParams();
-      for (const k in obj) {
-        form.append(k, obj[k]);
-      }
-      const body = decodeURIComponent(form.toString().replace(/\+/g, " ")); // 🔑 corrige o "+"
-      const res = await fetch(SHEET_ENDPOINT, {
-        method: "POST",
-        body,
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      });
+      for (const k in obj) form.append(k, obj[k]);
+      const res = await fetch(SHEET_ENDPOINT, { method: "POST", body: form });
       const txt = await res.text();
       return /ok/i.test(txt);
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
   // === PIX ===
-  function crc16Str(str) {
-    const bytes = [];
-    for (let i = 0; i < str.length; i++) bytes.push(str.charCodeAt(i));
-    let crc = 0xffff;
-    for (let b of bytes) {
-      crc ^= b << 8;
-      for (let i = 0; i < 8; i++) {
-        if ((crc & 0x8000) !== 0) crc = ((crc << 1) ^ 0x1021) & 0xffff;
-        else crc = (crc << 1) & 0xffff;
-      }
-    }
-    return crc.toString(16).toUpperCase().padStart(4, "0");
-  }
-
-  function buildPayloadWithAmount(basePayload, amount) {
-    let payload = basePayload.replace(/6304.{4}$/, "");
-    payload = payload.replace(/54\d{2}\d+(\.\d+)?/, "");
-    if (amount) {
-      const v = Number(amount).toFixed(2);
-      const len = v.length.toString().padStart(2, "0");
-      payload = payload + "54" + len + v;
-    }
-    payload = payload + "6304";
-    const crc = crc16Str(payload);
-    return payload + crc;
-  }
-
   function generatePixPayload() {
-    let raw = pixAmountInput.value.replace(/\D/g, "");
-    if (raw === "") raw = "0";
-    const amount = parseFloat((parseInt(raw, 10) / 100).toFixed(2));
-
-    if (!amount || isNaN(amount) || amount <= 0) {
-      alert("Digite um valor válido.");
-      return;
-    }
-
-    const finalPayload = buildPayloadWithAmount(BASE_PAYLOAD, amount);
-    const qrUrl =
-      "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" +
-      encodeURIComponent(finalPayload);
-
-    qrWrap.innerHTML = `<img src="${qrUrl}" data-payload="${finalPayload}" alt="QR PIX" 
-                          style="width:200px;height:200px;object-fit:contain;cursor:pointer;display:block;margin:0 auto;">`;
-
+    pixGenerated = true;
+    commentWarning.classList.add("hidden");
+    openCommentBox.disabled = false;
     document.getElementById("pixBox").classList.remove("hidden");
-
-    copyPixKey.onclick = () => {
-      const payload = qrWrap.querySelector("img")?.getAttribute("data-payload");
-      if (!payload) {
-        alert("Nenhum PIX gerado ainda.");
-        return;
-      }
-
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(payload).then(() => {
-          alert("Código PIX copiado!");
-        }).catch(() => fallbackCopy(payload));
-      } else {
-        fallbackCopy(payload);
-      }
-    };
-  }
-
-  function fallbackCopy(text) {
-    const textarea = document.createElement("textarea");
-    textarea.value = text;
-    textarea.style.position = "fixed";
-    textarea.style.opacity = "0";
-    document.body.appendChild(textarea);
-    textarea.focus();
-    textarea.select();
-    try {
-      document.execCommand("copy");
-      alert("Código PIX copiado!");
-    } catch (err) {
-      prompt("Copie o código PIX:", text);
-    }
-    document.body.removeChild(textarea);
+    qrWrap.innerHTML = `<div style="width:200px;height:200px;background:#eee;margin:auto"></div>`;
   }
 
   // === Eventos ===
   function setupListeners() {
     listFilter.addEventListener("change", renderItemSelect);
-    giftForm.addEventListener("submit", submitGift);
-
-    pixBtn.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      pixPanel.classList.remove("hidden");
-      window.scrollTo({ top: pixPanel.offsetTop - 20, behavior: "smooth" });
+    itemSelect.addEventListener("change", () => {
+      if (itemSelect.value) {
+        commentWarning.classList.add("hidden");
+        openCommentBox.disabled = false;
+      }
     });
+    document.getElementById("generatePix").addEventListener("click", generatePixPayload);
+    closePix.addEventListener("click", () => pixPanel.classList.add("hidden"));
+    pixBtn.addEventListener("click", () => pixPanel.classList.remove("hidden"));
 
-    document
-      .getElementById("generatePix")
-      .addEventListener("click", generatePixPayload);
-
-    closePix.addEventListener("click", () => {
-      pixPanel.classList.add("hidden");
-    });
-
+    // máscara moeda PIX
     pixAmountInput.addEventListener("input", () => {
       let v = pixAmountInput.value.replace(/\D/g, "");
       if (v === "") v = "0";
@@ -311,6 +208,5 @@
     });
   }
 
-  // start
   boot();
 })();
